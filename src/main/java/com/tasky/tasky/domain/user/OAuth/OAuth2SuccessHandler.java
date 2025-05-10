@@ -1,4 +1,4 @@
-package com.tasky.tasky.domain.users.OAuth;
+package com.tasky.tasky.domain.user.OAuth;
 
 import com.tasky.tasky.global.jwt.JwtTokenProvider;
 import jakarta.servlet.ServletException;
@@ -38,7 +38,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // JWT 생성
         String accessToken = jwtTokenProvider.createToken(email);
 //        String refreshToken = jwtTokenProvider.createRefreshToken(email);
-
+//
         String uri = "http://localhost:3000/?token="+accessToken;
         redirectStrategy.sendRedirect(request, response, uri);
 

@@ -1,7 +1,7 @@
-package com.tasky.tasky.domain.users.OAuth;
+package com.tasky.tasky.domain.user.OAuth;
 
-import com.tasky.tasky.domain.users.entity.Users;
-import com.tasky.tasky.domain.users.repository.UserRepository;
+import com.tasky.tasky.domain.user.entity.Users;
+import com.tasky.tasky.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,13 +29,11 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        log.info(registrationId + " 로그인 시도");
 
         // Google은 항상 sub라는 고유 ID를 제공하므로 여기서 직접 가져오기
         String userNameAttributeName = "sub";
 
         Map<String, Object> attributesMap = oAuth2User.getAttributes();
-        log.info("Google OAuth2 attributes: {}", attributesMap);
 
         OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName, attributesMap);
         Users user = save(attributes);
@@ -48,7 +46,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     }
 
     private Users save(OAuthAttributes attributes) {
-        Users user = userRepository.findByUidAndProvider(attributes.getUid(), attributes.getProvider())
+        Users user = userRepository.findByProviderIdAndProvider(attributes.getProviderId(), attributes.getProvider())
                 // 우리 프로젝트에서는 유저의 닉네임/사진에 대한 실시간 정보가 필요 없기 때문에 update는 하지 않는다.
                 .orElse(attributes.toEntity(attributes.getProvider()));
         return userRepository.save(user);

@@ -1,12 +1,12 @@
 package com.tasky.tasky.global;
 
-import com.tasky.tasky.domain.users.OAuth.CustomOAuth2UserService;
-import com.tasky.tasky.domain.users.OAuth.OAuth2SuccessHandler;
+import com.tasky.tasky.domain.user.OAuth.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -15,22 +15,24 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/public/**").permitAll()  // 누구나 접근 가능
-                        .anyRequest().authenticated()  // 그 외 요청은 인증 필요
-                )
+                .csrf(csrf -> csrf.disable())  // csrf 비활성화
+                .formLogin(form -> form.disable())  // Form login 방식 비활성화
+                .httpBasic(basic -> basic.disable())  // HTTP Basic 인증 방식 비활성화
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
                                 .userService(customOAuth2UserService)) // 사용자 정보 서비스 설정
-                        .successHandler(oAuth2SuccessHandler) // 성공 핸들러 설정
+//                        .successHandler(oAuth2SuccessHandler) // 성공 핸들러 설정
+                )
+                .authorizeHttpRequests(auth -> auth  // 경로 별 인가 작업
+                        .requestMatchers("/").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
 
         return http.build();

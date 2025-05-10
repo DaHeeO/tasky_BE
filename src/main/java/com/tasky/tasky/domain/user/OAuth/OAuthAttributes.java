@@ -1,7 +1,8 @@
-package com.tasky.tasky.domain.users.OAuth;
+package com.tasky.tasky.domain.user.OAuth;
 
-import com.tasky.tasky.domain.users.entity.Provider;
-import com.tasky.tasky.domain.users.entity.Users;
+import com.tasky.tasky.domain.user.entity.Provider;
+import com.tasky.tasky.domain.user.entity.Role;
+import com.tasky.tasky.domain.user.entity.Users;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -11,39 +12,37 @@ import java.util.Map;
 @Getter
 @Slf4j
 public class OAuthAttributes {
-
     private Map<String, Object> attributes;
     private String nameAttributeKey;
-    private String uid;
+    private String providerId;
     private String email;
-    private String username;
+    private String name;
     private String profileImage;
     private Provider provider;
 
     @Builder
-    public OAuthAttributes(Map<String, Object> attributes, String nameAttributeKey, String uid, String email, String username, String profileImage, Provider provider) {
+    public OAuthAttributes(Map<String, Object> attributes, String nameAttributeKey, String providerId, String email, String name, String profileImage, Provider provider) {
         this.attributes = attributes;
         this.nameAttributeKey=nameAttributeKey;
-        this.uid = uid;
+        this.providerId = providerId;
         this.email = email;
-        this.username = username;
+        this.name = name;
         this.profileImage = profileImage;
         this.provider = provider;
     }
 
 
-    public static OAuthAttributes of(String registrationId, String userNameAttributeName,
-                                     Map<String, Object> attributes) {
-        // 구글 외 다른 로그인 제공자도 고려할 경우 registrationId 사용
-        return ofGoogle(userNameAttributeName, attributes);
+    // 어떤 경로로 들어왔는지 대해 분기처리 (받아오는 Data form 이 다르기 때문에 객체 생성을 달리 해줘야함. 근데 현재는 구글만
+    public static OAuthAttributes of(String registrationId, String nameAttributeKey, Map<String, Object> attributes) {
+        return ofGoogle(nameAttributeKey, attributes);
     }
 
     private static OAuthAttributes ofGoogle(String nameAttributeKey, Map<String, Object> attributes) {
         log.info("google 로그인 시도");
         return OAuthAttributes.builder()
-                .uid((String) attributes.get("sub"))
+                .providerId((String) attributes.get("sub"))
                 .email((String) attributes.get("email"))
-                .username((String) attributes.get("name"))
+                .name((String) attributes.get("name"))
                 .profileImage((String) attributes.get("picture"))
                 .provider(Provider.GOOGLE)
                 .attributes(attributes)
@@ -53,11 +52,12 @@ public class OAuthAttributes {
 
     public Users toEntity(Provider provider) {
         return Users.builder()
-                .uid(uid)
+                .providerId(providerId)
                 .provider(provider)
                 .email(email)
-                .username(username)
+                .name(name)
                 .profileImage(profileImage)
+                .role(Role.ROLE_USER)
                 .build();
     }
 }
