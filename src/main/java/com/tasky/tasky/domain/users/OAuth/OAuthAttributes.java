@@ -57,7 +57,7 @@ public class OAuthAttributes {
                 .provider(provider)
                 .email(email)
                 .username(username)
-                .profileImage(profileImage) // ✅ 빠지면 안됨
+                .profileImage(profileImage)
                 .build();
     }
 }
