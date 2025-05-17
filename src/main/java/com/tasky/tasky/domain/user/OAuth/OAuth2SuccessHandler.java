@@ -28,9 +28,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                                         Authentication authentication) throws IOException, ServletException {
 
         log.info("social login success");
+        // 로그인 성공 시
         String accessToken = jwtTokenProvider.createOAuthAccessToken(authentication);
-        String uri = "http://localhost:3000/?token=" + accessToken;
+        String uri = "http://localhost:3000/oauth2/redirect?token=" + accessToken;
         redirectStrategy.sendRedirect(request, response, uri);
-
     }
 }
