@@ -46,9 +46,25 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     }
 
     private Users save(OAuthAttributes attributes) {
-        Users user = userRepository.findByProviderIdAndProvider(attributes.getProviderId(), attributes.getProvider())
-                // 우리 프로젝트에서는 유저의 닉네임/사진에 대한 실시간 정보가 필요 없기 때문에 update는 하지 않는다.
-                .orElse(attributes.toEntity(attributes.getProvider()));
-        return userRepository.save(user);
+        return userRepository.findByProviderIdAndProvider(attributes.getProviderId(), attributes.getProvider())
+                .map(entity -> {
+                    // 기존 유저 정보 업데이트 (필요한 정보만)
+                    boolean updated = false;
+
+                    if (!entity.getName().equals(attributes.getName())) {
+                        entity.setName(attributes.getName());
+                        updated = true;
+                    }
+                    if (!entity.getProfileImage().equals(attributes.getProfileImage())) {
+                        entity.setProfileImage(attributes.getProfileImage());
+                        updated = true;
+                    }
+
+                    if (updated) {
+                        return userRepository.save(entity);
+                    }
+                    return entity;
+                })
+                .orElseGet(() -> userRepository.save(attributes.toEntity(attributes.getProvider())));
     }
 }

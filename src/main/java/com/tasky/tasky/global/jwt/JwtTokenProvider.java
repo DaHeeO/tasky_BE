@@ -1,5 +1,6 @@
 package com.tasky.tasky.global.jwt;
 
+import com.tasky.tasky.domain.user.dto.OAuthLoginResponse;
 import com.tasky.tasky.domain.user.entity.Users;
 import com.tasky.tasky.domain.user.repository.UserRepository;
 import io.jsonwebtoken.*;
@@ -44,7 +45,7 @@ public class JwtTokenProvider {
         this.userRepository = userRepository;
     }
 
-    public String createOAuthAccessToken(Authentication authentication) {
+    public OAuthLoginResponse createOAuthAccessToken(Authentication authentication) {
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
@@ -65,7 +66,11 @@ public class JwtTokenProvider {
                 .compact();
 
         // 생성된 토큰을 토큰 dto에 담아 반환
-        return accessToken;
+        return OAuthLoginResponse.builder()
+                .accessToken(accessToken)
+                .name(user.getName())
+                .image(user.getProfileImage())
+                .build();
     }
 
     public boolean validateToken(String token) {

@@ -1,5 +1,6 @@
 package com.tasky.tasky.domain.user.OAuth;
 
+import com.tasky.tasky.domain.user.dto.OAuthLoginResponse;
 import com.tasky.tasky.global.jwt.JwtTokenProvider;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,9 +29,17 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                                         Authentication authentication) throws IOException, ServletException {
 
         log.info("social login success");
+
+        OAuthLoginResponse loginResponse = jwtTokenProvider.createOAuthAccessToken(authentication);
+
+
+        String uri = String.format(
+                "http://localhost:3000/oauth2/redirect?token=%s&name=%s&image=%s",
+                loginResponse.getAccessToken(),
+                java.net.URLEncoder.encode(loginResponse.getName(), "UTF-8"),
+                java.net.URLEncoder.encode(loginResponse.getImage(), "UTF-8")
+        );
         // 로그인 성공 시
-        String accessToken = jwtTokenProvider.createOAuthAccessToken(authentication);
-        String uri = "http://localhost:3000/oauth2/redirect?token=" + accessToken;
         redirectStrategy.sendRedirect(request, response, uri);
     }
 }
